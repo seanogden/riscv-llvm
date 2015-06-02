@@ -1092,6 +1092,7 @@ LLVMTypeRef LLVMX86MMXType(void);
       macro(InsertValueInst)                \
       macro(LandingPadInst)                 \
       macro(PHINode)                        \
+      macro(SIGMANode)                      \
       macro(SelectInst)                     \
       macro(ShuffleVectorInst)              \
       macro(StoreInst)                      \
