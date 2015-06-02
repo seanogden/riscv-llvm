@@ -1810,6 +1810,28 @@ LLVMBasicBlockRef LLVMGetIncomingBlock(LLVMValueRef PhiNode, unsigned Index) {
 }
 
 
+/*--.. Operations on sigma nodes .............................................--*/
+
+void LLVMAddIncoming(LLVMValueRef SigmaNode, LLVMValueRef *IncomingValues,
+                     LLVMBasicBlockRef *IncomingBlocks, unsigned Count) {
+  SIGMANode *SigmaVal = unwrap<SIGMANode>(SigmaNode);
+  for (unsigned I = 0; I != Count; ++I)
+    SigmaVal->addIncoming(unwrap(IncomingValues[I]), unwrap(IncomingBlocks[I]));
+}
+
+unsigned LLVMCountIncoming(LLVMValueRef SigmaNode) {
+  return unwrap<SIGMANode>(SigmaNode)->getNumIncomingValues();
+}
+
+LLVMValueRef LLVMGetIncomingValue(LLVMValueRef SigmaNode, unsigned Index) {
+  return wrap(unwrap<SIGMANode>(SigmaNode)->getIncomingValue(Index));
+}
+
+LLVMBasicBlockRef LLVMGetIncomingBlock(LLVMValueRef SigmaNode, unsigned Index) {
+  return wrap(unwrap<SIGMANode>(SigmaNode)->getIncomingBlock(Index));
+}
+
+
 /*===-- Instruction builders ----------------------------------------------===*/
 
 LLVMBuilderRef LLVMCreateBuilderInContext(LLVMContextRef C) {
