@@ -1349,6 +1349,25 @@ static void WriteInstruction(const Instruction &I, unsigned InstID,
     return;
   }
 
+  case Instruction::SIGMA: {
+    const SIGMANode &PN = cast<SIGMANode>(I);
+    Code = bitc::FUNC_CODE_INST_SIGMA;
+    // With the newer instruction encoding, forward references could give
+    // negative valued IDs.  This is most common for SIGMAs, so we use
+    // signed VBRs.
+    SmallVector<uint64_t, 128> Vals64;
+    Vals64.push_back(VE.getTypeID(PN.getType()));
+    for (unsigned i = 0, e = PN.getNumIncomingValues(); i != e; ++i) {
+      pushValueSigned(PN.getIncomingValue(i), InstID, Vals64, VE);
+      Vals64.push_back(VE.getValueID(PN.getIncomingBlock(i)));
+    }
+    // Emit a Vals64 vector and exit.
+    Stream.EmitRecord(Code, Vals64, AbbrevToUse);
+    Vals64.clear();
+    return;
+  }
+
+
   case Instruction::LandingPad: {
     const LandingPadInst &LP = cast<LandingPadInst>(I);
     Code = bitc::FUNC_CODE_INST_LANDINGPAD;

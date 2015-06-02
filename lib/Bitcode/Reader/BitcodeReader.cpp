@@ -2550,6 +2550,32 @@ bool BitcodeReader::ParseFunctionBody(Function *F) {
       break;
     }
 
+    case bitc::FUNC_CODE_INST_SIGMA: { // SIGMA: [ty, val0,bb0, ...]
+      if (Record.size() < 1 || ((Record.size()-1)&1))
+        return Error("Invalid SIGMA record");
+      Type *Ty = getTypeByID(Record[0]);
+      if (!Ty) return Error("Invalid SIGMA record");
+
+      SIGMANode *PN = SIGMANode::Create(Ty, (Record.size()-1)/2);
+      InstructionList.push_back(PN);
+
+      for (unsigned i = 0, e = Record.size()-1; i != e; i += 2) {
+        Value *V;
+        // With the new function encoding, it is possible that operands have
+        // negative IDs (for forward references).  Use a signed VBR
+        // representation to keep the encoding small.
+        if (UseRelativeIDs)
+          V = getValueSigned(Record, 1+i, NextValueNo, Ty);
+        else
+          V = getValue(Record, 1+i, NextValueNo, Ty);
+        BasicBlock *BB = getBasicBlock(Record[2+i]);
+        if (!V || !BB) return Error("Invalid SIGMA record");
+        PN->addIncoming(V, BB);
+      }
+      I = PN;
+      break;
+    }
+
     case bitc::FUNC_CODE_INST_LANDINGPAD: {
       // LANDINGPAD: [ty, val, val, num, (id0,val0 ...)?]
       unsigned Idx = 0;

@@ -286,7 +286,7 @@ namespace bitc {
     FUNC_CODE_INST_UNREACHABLE = 15, // UNREACHABLE
 
     FUNC_CODE_INST_PHI         = 16, // PHI:        [ty, val0,bb0, ...]
-    // 17 is unused.
+    FUNC_CODE_INST_SIGMA       = 17, // SIGMA:      [ty, val0,bb0, ...]
     // 18 is unused.
     FUNC_CODE_INST_ALLOCA      = 19, // ALLOCA:     [instty, op, align]
     FUNC_CODE_INST_LOAD        = 20, // LOAD:       [opty, op, align, vol]
