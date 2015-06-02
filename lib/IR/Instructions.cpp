@@ -81,6 +81,100 @@ const char *SelectInst::areInvalidOperands(Value *Op0, Value *Op1, Value *Op2) {
 
 
 //===----------------------------------------------------------------------===//
+//                               SIGMANode Class
+//===----------------------------------------------------------------------===//
+
+SIGMANode::SIGMANode(const SIGMANode &PN)
+  : Instruction(PN.getType(), Instruction::SIGMA,
+                allocHungoffUses(PN.getNumOperands()), PN.getNumOperands()),
+    ReservedSpace(PN.getNumOperands()) {
+  std::copy(PN.op_begin(), PN.op_end(), op_begin());
+  std::copy(PN.block_begin(), PN.block_end(), block_begin());
+  SubclassOptionalData = PN.SubclassOptionalData;
+}
+
+SIGMANode::~SIGMANode() {
+  dropHungoffUses();
+}
+
+Use *SIGMANode::allocHungoffUses(unsigned N) const {
+  // Allocate the array of Uses of the incoming values, followed by a pointer
+  // (with bottom bit set) to the User, followed by the array of pointers to
+  // the incoming basic blocks.
+  size_t size = N * sizeof(Use) + sizeof(Use::UserRef)
+    + N * sizeof(BasicBlock*);
+  Use *Begin = static_cast<Use*>(::operator new(size));
+  Use *End = Begin + N;
+  (void) new(End) Use::UserRef(const_cast<SIGMANode*>(this), 1);
+  return Use::initTags(Begin, End);
+}
+
+// removeIncomingValue - Remove an incoming value.  This is useful if a
+// predecessor basic block is deleted.
+Value *SIGMANode::removeIncomingValue(unsigned Idx, bool DeleteSIGMAIfEmpty) {
+  Value *Removed = getIncomingValue(Idx);
+
+  // Move everything after this operand down.
+  //
+  // FIXME: we could just swap with the end of the list, then erase.  However,
+  // clients might not expect this to happen.  The code as it is thrashes the
+  // use/def lists, which is kinda lame.
+  std::copy(op_begin() + Idx + 1, op_end(), op_begin() + Idx);
+  std::copy(block_begin() + Idx + 1, block_end(), block_begin() + Idx);
+
+  // Nuke the last value.
+  Op<-1>().set(0);
+  --NumOperands;
+
+  // If the SIGMA node is dead, because it has zero entries, nuke it now.
+  if (getNumOperands() == 0 && DeleteSIGMAIfEmpty) {
+    // If anyone is using this SIGMA, make them use a dummy value instead...
+    replaceAllUsesWith(UndefValue::get(getType()));
+    eraseFromParent();
+  }
+  return Removed;
+}
+
+/// growOperands - grow operands - This grows the operand list in response
+/// to a push_back style of operation.  This grows the number of ops by 1.5
+/// times.
+///
+void SIGMANode::growOperands() {
+  unsigned e = getNumOperands();
+  unsigned NumOps = e + e / 2;
+  if (NumOps < 2) NumOps = 2;      // 2 op SIGMA nodes are VERY common.
+
+  Use *OldOps = op_begin();
+  BasicBlock **OldBlocks = block_begin();
+
+  ReservedSpace = NumOps;
+  OperandList = allocHungoffUses(ReservedSpace);
+
+  std::copy(OldOps, OldOps + e, op_begin());
+  std::copy(OldBlocks, OldBlocks + e, block_begin());
+
+  Use::zap(OldOps, OldOps + e, true);
+}
+
+/// hasConstantValue - If the specified SIGMA node always merges together the same
+/// value, return the value, otherwise return null.
+Value *SIGMANode::hasConstantValue() const {
+  // Exploit the fact that sigma nodes always have at least one entry.
+  Value *ConstantValue = getIncomingValue(0);
+  for (unsigned i = 1, e = getNumIncomingValues(); i != e; ++i)
+    if (getIncomingValue(i) != ConstantValue && getIncomingValue(i) != this) {
+      if (ConstantValue != this)
+        return 0; // Incoming values not all the same.
+       // The case where the first value is this SIGMA.
+      ConstantValue = getIncomingValue(i);
+    }
+  if (ConstantValue == this)
+    return UndefValue::get(getType());
+  return ConstantValue;
+}
+
+
+//===----------------------------------------------------------------------===//
 //                               PHINode Class
 //===----------------------------------------------------------------------===//
 

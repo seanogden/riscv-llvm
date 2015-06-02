@@ -240,6 +240,7 @@ const char *Instruction::getOpcodeName(unsigned OpCode) {
   case ICmp:           return "icmp";
   case FCmp:           return "fcmp";
   case PHI:            return "phi";
+  case SIGMA:          return "sigma";
   case Select:         return "select";
   case Call:           return "call";
   case Shl:            return "shl";
@@ -324,6 +325,17 @@ bool Instruction::isIdenticalToWhenDefined(const Instruction *I) const {
     }
     return true;
   }
+  if (const SIGMANode *thisSIGMA = dyn_cast<SIGMANode>(this)) {
+    const SIGMANode *otherSIGMA = cast<SIGMANode>(I);
+    for (unsigned i = 0, e = thisSIGMA->getNumOperands(); i != e; ++i) {
+      if (thisSIGMA->getIncomingBlock(i) != otherSIGMA->getIncomingBlock(i))
+        return false;
+    }
+    return true;
+  }
+
+
+
   return true;
 }
 
