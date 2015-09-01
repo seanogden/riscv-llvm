@@ -2334,6 +2334,37 @@ LLVMValueRef LLVMGetIncomingValue(LLVMValueRef PhiNode, unsigned Index);
 LLVMBasicBlockRef LLVMGetIncomingBlock(LLVMValueRef PhiNode, unsigned Index);
 
 /**
+ * @defgroup LLVMCCoreValueInstructionSIGMANode SIGMA Nodes
+ *
+ * Functions in this group only apply to instructions that map to
+ * llvm::SIGMANode instances.
+ *
+ * @{
+ */
+
+/**
+ * Add an incoming value to the end of a PHI list.
+ */
+void LLVMAddIncomingSigma(LLVMValueRef SigmaNode, LLVMValueRef *IncomingValues,
+                     LLVMBasicBlockRef *IncomingBlocks, unsigned Count);
+
+/**
+ * Obtain the number of incoming basic blocks to a PHI node.
+ */
+unsigned LLVMCountIncomingSigma(LLVMValueRef SigmaNode);
+
+/**
+ * Obtain an incoming value to a PHI node as a LLVMValueRef.
+ */
+LLVMValueRef LLVMGetIncomingValueSigma(LLVMValueRef SigmaNode, unsigned Index);
+
+/**
+ * Obtain an incoming value to a PHI node as a LLVMBasicBlockRef.
+ */
+LLVMBasicBlockRef LLVMGetIncomingBlockSigma(LLVMValueRef SigmaNode, unsigned Index);
+
+
+/**
  * @}
  */
 
@@ -2545,6 +2576,7 @@ LLVMValueRef LLVMBuildFCmp(LLVMBuilderRef, LLVMRealPredicate Op,
 
 /* Miscellaneous instructions */
 LLVMValueRef LLVMBuildPhi(LLVMBuilderRef, LLVMTypeRef Ty, const char *Name);
+LLVMValueRef LLVMBuildSigma(LLVMBuilderRef, LLVMTypeRef Ty, const char *Name);
 LLVMValueRef LLVMBuildCall(LLVMBuilderRef, LLVMValueRef Fn,
                            LLVMValueRef *Args, unsigned NumArgs,
                            const char *Name);

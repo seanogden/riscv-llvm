@@ -173,7 +173,6 @@ Value *SIGMANode::hasConstantValue() const {
   return ConstantValue;
 }
 
-
 //===----------------------------------------------------------------------===//
 //                               PHINode Class
 //===----------------------------------------------------------------------===//
@@ -3611,6 +3610,11 @@ ShuffleVectorInst *ShuffleVectorInst::clone_impl() const {
 PHINode *PHINode::clone_impl() const {
   return new PHINode(*this);
 }
+
+SIGMANode *SIGMANode::clone_impl() const {
+  return new SIGMANode(*this);
+}
+
 
 LandingPadInst *LandingPadInst::clone_impl() const {
   return new LandingPadInst(*this);

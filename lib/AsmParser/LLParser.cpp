@@ -3869,7 +3869,6 @@ int LLParser::ParseSIGMA(Instruction *&Inst, PerFunctionState &PFS) {
   return AteExtraComma ? InstExtraComma : InstNormal;
 }
 
-
 /// ParsePHI
 ///   ::= 'phi' Type '[' Value ',' Value ']' (',' '[' Value ',' Value ']')*
 int LLParser::ParsePHI(Instruction *&Inst, PerFunctionState &PFS) {

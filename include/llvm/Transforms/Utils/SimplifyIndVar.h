@@ -26,6 +26,7 @@ class IVUsers;
 class Loop;
 class LPPassManager;
 class PHINode;
+class SIGMANode;
 class ScalarEvolution;
 
 /// Interface for visiting interesting IV users that are recognized but not

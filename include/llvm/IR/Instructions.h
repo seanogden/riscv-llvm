@@ -2013,6 +2013,7 @@ public:
                          const Twine &NameStr, BasicBlock *InsertAtEnd) {
     return new SIGMANode(Ty, NumReservedValues, NameStr, InsertAtEnd);
   }
+
   ~SIGMANode();
 
   /// Provide fast operand accessors
@@ -2156,7 +2157,6 @@ struct OperandTraits<SIGMANode> : public HungoffOperandTraits<2> {
 };
 
 DEFINE_TRANSPARENT_OPERAND_ACCESSORS(SIGMANode, Value)
-
 
 //===----------------------------------------------------------------------===//
 //                               PHINode Class

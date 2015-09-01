@@ -1810,6 +1810,28 @@ LLVMBasicBlockRef LLVMGetIncomingBlock(LLVMValueRef PhiNode, unsigned Index) {
 }
 
 
+/*--.. Operations on sigma nodes .............................................--*/
+
+void LLVMAddIncomingSigma(LLVMValueRef SigmaNode, LLVMValueRef *IncomingValues,
+                     LLVMBasicBlockRef *IncomingBlocks, unsigned Count) {
+  SIGMANode *SigmaVal = unwrap<SIGMANode>(SigmaNode);
+  for (unsigned I = 0; I != Count; ++I)
+    SigmaVal->addIncoming(unwrap(IncomingValues[I]), unwrap(IncomingBlocks[I]));
+}
+
+unsigned LLVMCountIncomingSigma(LLVMValueRef SigmaNode) {
+  return unwrap<SIGMANode>(SigmaNode)->getNumIncomingValues();
+}
+
+LLVMValueRef LLVMGetIncomingValueSigma(LLVMValueRef SigmaNode, unsigned Index) {
+  return wrap(unwrap<SIGMANode>(SigmaNode)->getIncomingValue(Index));
+}
+
+LLVMBasicBlockRef LLVMGetIncomingBlockSigma(LLVMValueRef SigmaNode, unsigned Index) {
+  return wrap(unwrap<SIGMANode>(SigmaNode)->getIncomingBlock(Index));
+}
+
+
 /*===-- Instruction builders ----------------------------------------------===*/
 
 LLVMBuilderRef LLVMCreateBuilderInContext(LLVMContextRef C) {
@@ -2320,6 +2342,10 @@ LLVMValueRef LLVMBuildFCmp(LLVMBuilderRef B, LLVMRealPredicate Op,
 }
 
 /*--.. Miscellaneous instructions ..........................................--*/
+
+LLVMValueRef LLVMBuildSigma(LLVMBuilderRef B, LLVMTypeRef Ty, const char *Name) {
+  return wrap(unwrap(B)->CreateSIGMA(unwrap(Ty), 0, Name));
+}
 
 LLVMValueRef LLVMBuildPhi(LLVMBuilderRef B, LLVMTypeRef Ty, const char *Name) {
   return wrap(unwrap(B)->CreatePHI(unwrap(Ty), 0, Name));

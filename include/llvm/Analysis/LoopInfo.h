@@ -51,6 +51,7 @@ class DominatorTree;
 class LoopInfo;
 class Loop;
 class PHINode;
+class SIGMANode;
 class raw_ostream;
 template<class N, class M> class LoopInfoBase;
 template<class N, class M> class LoopBase;

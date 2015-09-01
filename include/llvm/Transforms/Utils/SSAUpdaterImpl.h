@@ -25,6 +25,7 @@ namespace llvm {
 
 class CastInst;
 class PHINode;
+class SIGMANode;
 template<typename T> class SSAUpdaterTraits;
 
 template<typename UpdaterT>

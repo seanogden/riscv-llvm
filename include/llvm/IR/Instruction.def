@@ -161,7 +161,7 @@ HANDLE_CAST_INST(44, BitCast , BitCastInst )  // Type cast
 HANDLE_OTHER_INST(45, ICmp   , ICmpInst   )  // Integer comparison instruction
 HANDLE_OTHER_INST(46, FCmp   , FCmpInst   )  // Floating point comparison instr.
 HANDLE_OTHER_INST(47, PHI    , PHINode    )  // PHI node instruction
-HANDLE_OTHER_INST(48, SIGMA  , SIGMANode  )  // PHI node instruction
+HANDLE_OTHER_INST(48, SIGMA  , SIGMANode  )  // SIGMA node instruction
 HANDLE_OTHER_INST(49, Call   , CallInst   )  // Call a function
 HANDLE_OTHER_INST(50, Select , SelectInst )  // select instruction
 HANDLE_OTHER_INST(51, UserOp1, Instruction)  // May be used internally in a pass
