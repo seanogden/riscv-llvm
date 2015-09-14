@@ -33,6 +33,7 @@ class LoadInst;
 class Value;
 class Pass;
 class PHINode;
+class SIGMANode;
 class AllocaInst;
 class ConstantExpr;
 class DataLayout;

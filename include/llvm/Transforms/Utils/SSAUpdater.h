@@ -24,6 +24,7 @@ namespace llvm {
   template<typename T> class SmallVectorImpl;
   template<typename T> class SSAUpdaterTraits;
   class PHINode;
+  class SIGMANode;
   class Type;
   class Use;
   class Value;

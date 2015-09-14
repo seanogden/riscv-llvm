@@ -57,6 +57,7 @@ class MachineInstr;
 class MachineRegisterInfo;
 class MDNode;
 class PHINode;
+class SIGMANode;
 class PtrToIntInst;
 class ReturnInst;
 class SDDbgValue;
@@ -523,6 +524,7 @@ private:
   void visitAtomicRMW(const AtomicRMWInst &I);
   void visitFence(const FenceInst &I);
   void visitPHI(const PHINode &I);
+  void visitSIGMA(const SIGMANode &I);
   void visitCall(const CallInst &I);
   bool visitMemCmpCall(const CallInst &I);
   bool visitUnaryFloatCall(const CallInst &I, unsigned Opcode);

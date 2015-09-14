@@ -142,7 +142,7 @@ namespace lltok {
     kw_urem, kw_srem, kw_frem, kw_shl,  kw_lshr, kw_ashr,
     kw_and,  kw_or,   kw_xor,  kw_icmp, kw_fcmp,
 
-    kw_phi, kw_call,
+    kw_phi, kw_sigma, kw_call,
     kw_trunc, kw_zext, kw_sext, kw_fptrunc, kw_fpext, kw_uitofp, kw_sitofp,
     kw_fptoui, kw_fptosi, kw_inttoptr, kw_ptrtoint, kw_bitcast,
     kw_select, kw_va_arg,

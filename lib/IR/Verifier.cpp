@@ -264,6 +264,7 @@ namespace {
     void visitPtrToIntInst(PtrToIntInst &I);
     void visitBitCastInst(BitCastInst &I);
     void visitPHINode(PHINode &PN);
+    void visitSIGMANode(SIGMANode &PN);
     void visitBinaryOperator(BinaryOperator &B);
     void visitICmpInst(ICmpInst &IC);
     void visitFCmpInst(FCmpInst &FC);
@@ -1355,7 +1356,29 @@ void Verifier::visitPHINode(PHINode &PN) {
 
   visitInstruction(PN);
 }
+/// visitSIGMANode - Ensure that a SIGMA node is well formed.
+///
+void Verifier::visitSIGMANode(SIGMANode &PN) {
+  // Ensure that the SIGMA nodes are all grouped together at the top of the block.
+  // This can be tested by checking whether the instruction before this is
+  // either nonexistent (because this is begin()) or is a SIGMA node.  If not,
+  // then there is some other instruction before a SIGMA.
+  Assert2(&PN == &PN.getParent()->front() || 
+          isa<SIGMANode>(--BasicBlock::iterator(&PN)),
+          "SIGMA nodes not grouped at top of basic block!",
+          &PN, PN.getParent());
 
+  // Check that all of the values of the SIGMA node have the same type as the
+  // result, and that the incoming blocks are really basic blocks.
+  for (unsigned i = 0, e = PN.getNumIncomingValues(); i != e; ++i) {
+    Assert1(PN.getType() == PN.getIncomingValue(i)->getType(),
+            "SIGMA node operands are not the same type as the result!", &PN);
+  }
+
+  // All other SIGMA node constraints are checked in the visitBasicBlock method.
+
+  visitInstruction(PN);
+}
 void Verifier::VerifyCallSite(CallSite CS) {
   Instruction *I = CS.getInstruction();
 

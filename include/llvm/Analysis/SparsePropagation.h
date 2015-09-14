@@ -26,6 +26,7 @@ namespace llvm {
   class Argument;
   class Instruction;
   class PHINode;
+  class SIGMANode;
   class TerminatorInst;
   class BasicBlock;
   class Function;

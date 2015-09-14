@@ -31,6 +31,7 @@ namespace llvm {
   class Value;
   class AliasAnalysis;
   class PHINode;
+  class SIGMANode;
   class SelectInst;
 }
 

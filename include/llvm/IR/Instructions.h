@@ -1962,6 +1962,203 @@ InsertValueInst::InsertValueInst(Value *Agg,
 DEFINE_TRANSPARENT_OPERAND_ACCESSORS(InsertValueInst, Value)
 
 //===----------------------------------------------------------------------===//
+//                               SIGMANode Class
+//===----------------------------------------------------------------------===//
+
+// SIGMANode - The SIGMANode class is used to represent the magical mystical SIGMA
+// node, that can not exist in nature, but can be synthesized in a computer
+// scientist's overactive imagination.
+//
+class SIGMANode : public Instruction {
+  void *operator new(size_t, unsigned) LLVM_DELETED_FUNCTION;
+  /// ReservedSpace - The number of operands actually allocated.  NumOperands is
+  /// the number actually in use.
+  unsigned ReservedSpace;
+  SIGMANode(const SIGMANode &PN);
+  // allocate space for exactly zero operands
+  void *operator new(size_t s) {
+    return User::operator new(s, 0);
+  }
+  explicit SIGMANode(Type *Ty, unsigned NumReservedValues,
+                   const Twine &NameStr = "", Instruction *InsertBefore = 0)
+    : Instruction(Ty, Instruction::SIGMA, 0, 0, InsertBefore),
+      ReservedSpace(NumReservedValues) {
+    setName(NameStr);
+    OperandList = allocHungoffUses(ReservedSpace);
+  }
+
+  SIGMANode(Type *Ty, unsigned NumReservedValues, const Twine &NameStr,
+          BasicBlock *InsertAtEnd)
+    : Instruction(Ty, Instruction::SIGMA, 0, 0, InsertAtEnd),
+      ReservedSpace(NumReservedValues) {
+    setName(NameStr);
+    OperandList = allocHungoffUses(ReservedSpace);
+  }
+protected:
+  // allocHungoffUses - this is more complicated than the generic
+  // User::allocHungoffUses, because we have to allocate Uses for the incoming
+  // values and pointers to the incoming blocks, all in one allocation.
+  Use *allocHungoffUses(unsigned) const;
+
+  virtual SIGMANode *clone_impl() const;
+public:
+  /// Constructors - NumReservedValues is a hint for the number of incoming
+  /// edges that this sigma node will have (use 0 if you really have no idea).
+  static SIGMANode *Create(Type *Ty, unsigned NumReservedValues,
+                         const Twine &NameStr = "",
+                         Instruction *InsertBefore = 0) {
+    return new SIGMANode(Ty, NumReservedValues, NameStr, InsertBefore);
+  }
+  static SIGMANode *Create(Type *Ty, unsigned NumReservedValues,
+                         const Twine &NameStr, BasicBlock *InsertAtEnd) {
+    return new SIGMANode(Ty, NumReservedValues, NameStr, InsertAtEnd);
+  }
+
+  ~SIGMANode();
+
+  /// Provide fast operand accessors
+  DECLARE_TRANSPARENT_OPERAND_ACCESSORS(Value);
+
+  // Block iterator interface. This provides access to the list of incoming
+  // basic blocks, which parallels the list of incoming values.
+
+  typedef BasicBlock **block_iterator;
+  typedef BasicBlock * const *const_block_iterator;
+
+  block_iterator block_begin() {
+    Use::UserRef *ref =
+      reinterpret_cast<Use::UserRef*>(op_begin() + ReservedSpace);
+    return reinterpret_cast<block_iterator>(ref + 1);
+  }
+
+  const_block_iterator block_begin() const {
+    const Use::UserRef *ref =
+      reinterpret_cast<const Use::UserRef*>(op_begin() + ReservedSpace);
+    return reinterpret_cast<const_block_iterator>(ref + 1);
+  }
+
+  block_iterator block_end() {
+    return block_begin() + getNumOperands();
+  }
+
+  const_block_iterator block_end() const {
+    return block_begin() + getNumOperands();
+  }
+
+  /// getNumIncomingValues - Return the number of incoming edges
+  ///
+  unsigned getNumIncomingValues() const { return getNumOperands(); }
+
+  /// getIncomingValue - Return incoming value number x
+  ///
+  Value *getIncomingValue(unsigned i) const {
+    return getOperand(i);
+  }
+  void setIncomingValue(unsigned i, Value *V) {
+    setOperand(i, V);
+  }
+  static unsigned getOperandNumForIncomingValue(unsigned i) {
+    return i;
+  }
+  static unsigned getIncomingValueNumForOperand(unsigned i) {
+    return i;
+  }
+
+  /// getIncomingBlock - Return incoming basic block number @p i.
+  ///
+  BasicBlock *getIncomingBlock(unsigned i) const {
+    return block_begin()[i];
+  }
+
+  /// getIncomingBlock - Return incoming basic block corresponding
+  /// to an operand of the SIGMA.
+  ///
+  BasicBlock *getIncomingBlock(const Use &U) const {
+    assert(this == U.getUser() && "Iterator doesn't point to SIGMA's Uses?");
+    return getIncomingBlock(unsigned(&U - op_begin()));
+  }
+
+  /// getIncomingBlock - Return incoming basic block corresponding
+  /// to value use iterator.
+  ///
+  template <typename U>
+  BasicBlock *getIncomingBlock(value_use_iterator<U> I) const {
+    return getIncomingBlock(I.getUse());
+  }
+
+  void setIncomingBlock(unsigned i, BasicBlock *BB) {
+    block_begin()[i] = BB;
+  }
+
+  /// addIncoming - Add an incoming value to the end of the SIGMA list
+  ///
+  void addIncoming(Value *V, BasicBlock *BB) {
+    assert(V && "SIGMA node got a null value!");
+    assert(BB && "SIGMA node got a null basic block!");
+    assert(getType() == V->getType() &&
+           "All operands to SIGMA node must be the same type as the SIGMA node!");
+    if (NumOperands == ReservedSpace)
+      growOperands();  // Get more space!
+    // Initialize some new operands.
+    ++NumOperands;
+    setIncomingValue(NumOperands - 1, V);
+    setIncomingBlock(NumOperands - 1, BB);
+  }
+
+  /// removeIncomingValue - Remove an incoming value.  This is useful if a
+  /// predecessor basic block is deleted.  The value removed is returned.
+  ///
+  /// If the last incoming value for a SIGMA node is removed (and DeleteSIGMAIfEmpty
+  /// is true), the SIGMA node is destroyed and any uses of it are replaced with
+  /// dummy values.  The only time there should be zero incoming values to a SIGMA
+  /// node is when the block is dead, so this strategy is sound.
+  ///
+  Value *removeIncomingValue(unsigned Idx, bool DeleteSIGMAIfEmpty = true);
+
+  Value *removeIncomingValue(const BasicBlock *BB, bool DeleteSIGMAIfEmpty=true) {
+    int Idx = getBasicBlockIndex(BB);
+    assert(Idx >= 0 && "Invalid basic block argument to remove!");
+    return removeIncomingValue(Idx, DeleteSIGMAIfEmpty);
+  }
+
+  /// getBasicBlockIndex - Return the first index of the specified basic
+  /// block in the value list for this SIGMA.  Returns -1 if no instance.
+  ///
+  int getBasicBlockIndex(const BasicBlock *BB) const {
+    for (unsigned i = 0, e = getNumOperands(); i != e; ++i)
+      if (block_begin()[i] == BB)
+        return i;
+    return -1;
+  }
+
+  Value *getIncomingValueForBlock(const BasicBlock *BB) const {
+    int Idx = getBasicBlockIndex(BB);
+    assert(Idx >= 0 && "Invalid basic block argument!");
+    return getIncomingValue(Idx);
+  }
+
+  /// hasConstantValue - If the specified SIGMA node always merges together the
+  /// same value, return the value, otherwise return null.
+  Value *hasConstantValue() const;
+
+  /// Methods for support type inquiry through isa, cast, and dyn_cast:
+  static inline bool classof(const Instruction *I) {
+    return I->getOpcode() == Instruction::SIGMA;
+  }
+  static inline bool classof(const Value *V) {
+    return isa<Instruction>(V) && classof(cast<Instruction>(V));
+  }
+ private:
+  void growOperands();
+};
+
+template <>
+struct OperandTraits<SIGMANode> : public HungoffOperandTraits<2> {
+};
+
+DEFINE_TRANSPARENT_OPERAND_ACCESSORS(SIGMANode, Value)
+
+//===----------------------------------------------------------------------===//
 //                               PHINode Class
 //===----------------------------------------------------------------------===//
 

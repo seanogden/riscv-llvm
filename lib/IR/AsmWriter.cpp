@@ -1888,6 +1888,17 @@ void AssemblyWriter::printInstruction(const Instruction &I) {
       writeOperand(PN->getIncomingValue(op), false); Out << ", ";
       writeOperand(PN->getIncomingBlock(op), false); Out << " ]";
     }
+  } else if (const SIGMANode *PN = dyn_cast<SIGMANode>(&I)) {
+    Out << ' ';
+    TypePrinter.print(I.getType(), Out);
+    Out << ' ';
+
+    for (unsigned op = 0, Eop = PN->getNumIncomingValues(); op < Eop; ++op) {
+      if (op) Out << ", ";
+      Out << "[ ";
+      writeOperand(PN->getIncomingValue(op), false); Out << ", ";
+      writeOperand(PN->getIncomingBlock(op), false); Out << " ]";
+    }
   } else if (const ExtractValueInst *EVI = dyn_cast<ExtractValueInst>(&I)) {
     Out << ' ';
     writeOperand(I.getOperand(0), true);

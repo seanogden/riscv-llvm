@@ -646,6 +646,7 @@ lltok::Kind LLLexer::LexIdentifier() {
   INSTKEYWORD(icmp,  ICmp); INSTKEYWORD(fcmp,  FCmp);
 
   INSTKEYWORD(phi,         PHI);
+  INSTKEYWORD(sigma,       SIGMA);
   INSTKEYWORD(call,        Call);
   INSTKEYWORD(trunc,       Trunc);
   INSTKEYWORD(zext,        ZExt);

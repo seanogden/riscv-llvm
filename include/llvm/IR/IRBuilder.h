@@ -1274,6 +1274,11 @@ public:
     return Insert(PHINode::Create(Ty, NumReservedValues), Name);
   }
 
+  SIGMANode *CreateSIGMA(Type *Ty, unsigned NumReservedValues,
+                     const Twine &Name = "") {
+    return Insert(SIGMANode::Create(Ty, NumReservedValues), Name);
+  }
+
   CallInst *CreateCall(Value *Callee, const Twine &Name = "") {
     return Insert(CallInst::Create(Callee), Name);
   }

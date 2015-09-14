@@ -3301,6 +3301,7 @@ int LLParser::ParseInstruction(Instruction *&Inst, BasicBlock *BB,
   case lltok::kw_insertelement:  return ParseInsertElement(Inst, PFS);
   case lltok::kw_shufflevector:  return ParseShuffleVector(Inst, PFS);
   case lltok::kw_phi:            return ParsePHI(Inst, PFS);
+  case lltok::kw_sigma:          return ParseSIGMA(Inst, PFS);
   case lltok::kw_landingpad:     return ParseLandingPad(Inst, PFS);
   case lltok::kw_call:           return ParseCall(Inst, PFS, false);
   case lltok::kw_tail:           return ParseCall(Inst, PFS, true);
@@ -3821,6 +3822,51 @@ bool LLParser::ParseShuffleVector(Instruction *&Inst, PerFunctionState &PFS) {
 
   Inst = new ShuffleVectorInst(Op0, Op1, Op2);
   return false;
+}
+
+/// ParseSIGMA
+///   ::= 'sigma' Type '[' Value ',' Value ']' (',' '[' Value ',' Value ']')*
+int LLParser::ParseSIGMA(Instruction *&Inst, PerFunctionState &PFS) {
+  Type *Ty = 0;  LocTy TypeLoc;
+  Value *Op0, *Op1;
+
+  if (ParseType(Ty, TypeLoc) ||
+      ParseToken(lltok::lsquare, "expected '[' in sigma value list") ||
+      ParseValue(Ty, Op0, PFS) ||
+      ParseToken(lltok::comma, "expected ',' after insertelement value") ||
+      ParseValue(Type::getLabelTy(Context), Op1, PFS) ||
+      ParseToken(lltok::rsquare, "expected ']' in sigma value list"))
+    return true;
+
+  bool AteExtraComma = false;
+  SmallVector<std::pair<Value*, BasicBlock*>, 16> SIGMAVals;
+  while (1) {
+    SIGMAVals.push_back(std::make_pair(Op0, cast<BasicBlock>(Op1)));
+
+    if (!EatIfPresent(lltok::comma))
+      break;
+
+    if (Lex.getKind() == lltok::MetadataVar) {
+      AteExtraComma = true;
+      break;
+    }
+
+    if (ParseToken(lltok::lsquare, "expected '[' in sigma value list") ||
+        ParseValue(Ty, Op0, PFS) ||
+        ParseToken(lltok::comma, "expected ',' after insertelement value") ||
+        ParseValue(Type::getLabelTy(Context), Op1, PFS) ||
+        ParseToken(lltok::rsquare, "expected ']' in sigma value list"))
+      return true;
+  }
+
+  if (!Ty->isFirstClassType())
+    return Error(TypeLoc, "sigma node must have first class type");
+
+  SIGMANode *PN = SIGMANode::Create(Ty, SIGMAVals.size());
+  for (unsigned i = 0, e = SIGMAVals.size(); i != e; ++i)
+    PN->addIncoming(SIGMAVals[i].first, SIGMAVals[i].second);
+  Inst = PN;
+  return AteExtraComma ? InstExtraComma : InstNormal;
 }
 
 /// ParsePHI

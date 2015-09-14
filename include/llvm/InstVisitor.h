@@ -179,6 +179,7 @@ public:
   RetTy visitFenceInst(FenceInst   &I)            { DELEGATE(Instruction);}
   RetTy visitGetElementPtrInst(GetElementPtrInst &I){ DELEGATE(Instruction);}
   RetTy visitPHINode(PHINode       &I)            { DELEGATE(Instruction);}
+  RetTy visitSIGMANode(SIGMANode   &I)            { DELEGATE(Instruction);}
   RetTy visitTruncInst(TruncInst &I)              { DELEGATE(CastInst);}
   RetTy visitZExtInst(ZExtInst &I)                { DELEGATE(CastInst);}
   RetTy visitSExtInst(SExtInst &I)                { DELEGATE(CastInst);}
