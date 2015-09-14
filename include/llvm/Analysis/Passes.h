@@ -214,6 +214,9 @@ namespace llvm {
   // information and prints it with -analyze.
   //
   FunctionPass *createMemDepPrinter();
+
+  FunctionPass *createSTPass(); 
+  FunctionPass *createSTEverythingPass();
 }
 
 #endif

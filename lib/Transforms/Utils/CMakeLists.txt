@@ -28,6 +28,7 @@ add_llvm_library(LLVMTransformUtils
   SimplifyIndVar.cpp
   SimplifyInstructions.cpp
   SimplifyLibCalls.cpp
+  ST.cpp
   UnifyFunctionExitNodes.cpp
   Utils.cpp
   ValueMapper.cpp
